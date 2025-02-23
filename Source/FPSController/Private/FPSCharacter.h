@@ -60,8 +60,15 @@ private:
 	void HandleLookInput(const FInputActionValue& InputActionValue);
 	void HandleMoveInput(const FInputActionValue& InputActionValue);
 	void HandleSlideInput(const FInputActionValue& InputActionValue);
-
-	//movement;
-	UPROPERTY(VisibleDefaultsOnly, Category = "Movement")
+	
+	//slide
+	UPROPERTY(VisibleDefaultsOnly, Category = "Slide")
 	bool bIsSliding;
+
+	UPROPERTY(EditDefaultsOnly, Category="Slide")
+	float SlideTime = 0.5f;
+	
+	FTimerHandle SlideHandle; 
+	
+	void UnsetSlide() const;
 };

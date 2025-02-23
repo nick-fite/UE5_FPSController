@@ -25,9 +25,9 @@ AFPSCharacter::AFPSCharacter()
 	ViewCam->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(1200.f);
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	
-	
-
+	SlideHandle = 
 }
 
 // Called when the game starts or when spawned
@@ -42,6 +42,8 @@ void AFPSCharacter::BeginPlay()
 			subsys->AddMappingContext(MappingContext, 0);
 		}
 	}
+		
+		GetCharacterMovement()->MaxAcceleration = 6000;
 }
 
 // Called every frame
@@ -102,19 +104,31 @@ void AFPSCharacter::HandleSlideInput(const FInputActionValue& InputActionValue)
 {
 	bool InputVal = InputActionValue.Get<bool>();
 	
-	bIsSliding = InputVal;
-	UE_LOG(LogTemp, Warning, TEXT("Setting slide %hhd"), InputVal);
-	if(bIsSliding)
+	if(!bIsSliding && InputVal)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Setting slide %hhd"), InputVal);
+		GetCharacterMovement()->bWantsToCrouch = true;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 3000;
+		GetCharacterMovement()->MaxAcceleration = 6000;
+		GetCharacterMovement()->SetCrouchedHalfHeight(5);
 		GetCharacterMovement()->Crouch();
-		GetCharacterMovement()->MaxWalkSpeed = 30000;
-		GetCharacterMovement()->CrouchedHalfHeight = 5;
+
+		GetWorldTimerManager().SetTimer(SlideHandle, this, &AFPSCharacter::UnsetSlide, SlideTime, false);
+		bIsSliding = true;
 	}
-	else
+	else if (!InputVal)
 	{
-		GetCharacterMovement()->UnCrouch();
-		GetCharacterMovement()->bWantsToCrouch = false;
-		GetCharacterMovement()->MaxWalkSpeed = 600;
-		GetCharacterMovement()->CrouchedHalfHeight = 40;
+		UnsetSlide();
+		bIsSliding = false;
 	}
+}
+
+void AFPSCharacter::UnsetSlide() const
+{
+	UE_LOG(LogTemp, Warning, TEXT("Unsetting slide"));
+	GetWorldTimerManager().ClearTimer(SlideHandle);
+	GetCharacterMovement()->bWantsToCrouch = false;
+	GetCharacterMovement()->MaxWalkSpeed = 600;
+	GetCharacterMovement()->SetCrouchedHalfHeight(40);
+	GetCharacterMovement()->UnCrouch();
 }
