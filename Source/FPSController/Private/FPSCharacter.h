@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "EnhancedInputComponent.h"
+#include "Gun/Gun.h"
 #include "FPSCharacter.generated.h"
 
 class UCameraComponent;
@@ -46,6 +47,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* SlideInputAction;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ShootInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ReloadInputAction;
+
 	//Camera
 	UPROPERTY(VisibleDefaultsOnly, Category="View")
 	class UCameraComponent* ViewCam;
@@ -60,6 +67,8 @@ private:
 	void HandleLookInput(const FInputActionValue& InputActionValue);
 	void HandleMoveInput(const FInputActionValue& InputActionValue);
 	void HandleSlideInput(const FInputActionValue& InputActionValue);
+	void HandleShootInput(const FInputActionValue& InputActionValue);
+	void HandleReloadInput(const FInputActionValue& InputActionValue);
 	
 	//slide
 	UPROPERTY(VisibleDefaultsOnly, Category = "Slide")
@@ -69,6 +78,40 @@ private:
 	float SlideTime = 0.5f;
 	
 	FTimerHandle SlideHandle; 
+	FTimerHandle GunRotateHandle; 
+	void UnsetSlide();
+
+	UPROPERTY(EditDefaultsOnly, Category="Gun")
+	float RotationDuration;
+
+	UPROPERTY(VisibleAnywhere, Category="Gun")
+	float RotationTimeElapsed;
+
+	FRotator InitGunRotation;
 	
-	void UnsetSlide() const;
+	bool bReloading;
+
+	FVector InitGunLocation;
+	float MoveDuration;
+	float MoveTimeElapsed;
+	
+	bool bIsShooting;
+
+	UPROPERTY(VisibleAnywhere, Category="Gun")
+	UStaticMeshComponent* GunMeshComp;
+	void StartGunRotation();
+
+	UPROPERTY(EditDefaultsOnly, Category="Gun")
+	UParticleSystem* MuzzleFlashParticleSystem;
+
+	UPROPERTY(VisibleAnywhere)
+	UArrowComponent* Arrow;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UParticleSystem* TargetDestroyParticleSystem;
+	
+public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void StartCameraShake();
+
 };
